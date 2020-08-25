@@ -1,0 +1,98 @@
+import Taro, {useEffect, useState, useCallback, eventCenter} from '@tarojs/taro';
+import {Block, Image} from '@tarojs/components';
+
+let POOL_MOUNTED = false;
+
+export type Task = {
+  /**
+   * 该任务的第一张图片链接
+   */
+  from: string,
+  /**
+   * 需要加载的图片数量
+   */
+  length: number,
+  /**
+   * 未加载完成图片数量
+   */
+  count: number,
+  /**
+   * 加载成功的图片
+   */
+  loaded: string[],
+  /**
+   * 加载失败的图片
+   */
+  error: string[],
+  /**
+   * 任务完成回调
+   * @param task
+   */
+  cb(task: Task): void
+}
+
+const ImageTaskMap: { [key: string]: Task } = {}
+const Tasks: Set<Task> = new Set<Task>();
+
+const ImagePool: Taro.FC = () => {
+  const [images, setImages] = useState<string[]>([]);
+
+  const removeImages = useCallback((task: Task) => {
+    // 避免重复执行callback（实际上因为使用promise，不判断也不会有影响- -
+    if (Tasks.has(task)) {
+      const newImages = [...images];
+      const index = newImages.indexOf(task.from);
+
+      newImages.splice(index, index + task.length);
+      setImages(newImages);
+      Tasks.delete(task);
+      task.cb(task);
+    }
+  }, [images]);
+
+  const handleLoad = useCallback((event) => {
+    const src = event.target.dataset.src;
+    const task = ImageTaskMap[src];
+
+    if (task) {
+      task.count--;
+      event.type === 'error' ? task.error.push(src) : task.loaded.push(src);
+      delete ImageTaskMap[src];
+      if (task.count === 0) removeImages(task);
+    }
+  }, [images]);
+
+  useEffect(() => {
+    if (POOL_MOUNTED) return; // 防止多个组件注册，只需在首次进入的页面监听事件即可
+    POOL_MOUNTED = true;
+    eventCenter.on('Preload:add', ({data, cb, timeout}) => {
+      let newImages: string[] = [];
+      const task = {
+        from: '', length: 0, count: 0, loaded: [], error: [], cb
+      };
+
+      data.forEach(img => {
+        if (images.indexOf(img) < 0) newImages.push(img);
+        ImageTaskMap[img] = task;
+      });
+
+      task.from = newImages[0];
+      task.length = task.count = newImages.length;
+      Tasks.add(task);
+
+      setImages(images.concat(newImages));
+      // 避免图片加载超时
+      if (timeout > 0) setTimeout(() => removeImages(task), timeout)
+    })
+  }, []);
+
+  return (
+      <Block>
+        {images.map(src => (
+            <Image style={'display: none'} src={src} key={src} data-src={src} onLoad={handleLoad} onError={handleLoad} />
+        ))}
+      </Block>
+  )
+};
+
+export default ImagePool;
