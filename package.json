@@ -1,6 +1,6 @@
 {
   "name": "taro-preload",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "taro component, preload image everywhere",
   "main": "dist/index.js",
   "templateInfo": {

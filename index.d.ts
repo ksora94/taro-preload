@@ -22,8 +22,8 @@ export type Task = {
  * @param data 图片列表
  * @param timeout 超时时间
  */
-export declare function preload(data: string[], timeout?: number): Promise<Task>
+declare function preload(data: string[], timeout?: number): Promise<Task>
 
-declare const Preload: Taro.FC
+export default preload
 
-export default Preload
+export declare const Preload: Taro.FC
