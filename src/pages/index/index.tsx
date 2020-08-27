@@ -1,8 +1,7 @@
 import Taro, { Component, Config } from '@tarojs/taro'
 import {View, Button, Image} from '@tarojs/components'
 import './index.scss'
-import preload from '../../components/Preload';
-import Preload from '../../components/Preload/Pool';
+import preload, {Preload} from '../../index';
 
 export default class Index extends Component {
   readonly state = {

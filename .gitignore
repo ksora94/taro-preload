@@ -1,4 +1,5 @@
 .idea
 .temp
 dist
+dev
 node_modules

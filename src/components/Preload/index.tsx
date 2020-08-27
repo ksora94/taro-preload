@@ -1,40 +1,21 @@
 import Taro, {useEffect, useState, useCallback, eventCenter} from '@tarojs/taro';
 import {Block, Image} from '@tarojs/components';
 
-let POOL_MOUNTED = false;
+let PRELOAD_MOUNTED = false;
 
 export type Task = {
-  /**
-   * 该任务的第一张图片链接
-   */
   from: string,
-  /**
-   * 需要加载的图片数量
-   */
   length: number,
-  /**
-   * 未加载完成图片数量
-   */
   count: number,
-  /**
-   * 加载成功的图片
-   */
   loaded: string[],
-  /**
-   * 加载失败的图片
-   */
   error: string[],
-  /**
-   * 任务完成回调
-   * @param task
-   */
   cb(task: Task): void
 }
 
 const ImageTaskMap: { [key: string]: Task } = {}
 const Tasks: Set<Task> = new Set<Task>();
 
-const ImagePool: Taro.FC = () => {
+const Preload: Taro.FC = () => {
   const [images, setImages] = useState<string[]>([]);
 
   const removeImages = useCallback((task: Task) => {
@@ -63,8 +44,8 @@ const ImagePool: Taro.FC = () => {
   }, [images]);
 
   useEffect(() => {
-    if (POOL_MOUNTED) return; // 防止多个组件注册，只需在首次进入的页面监听事件即可
-    POOL_MOUNTED = true;
+    if (PRELOAD_MOUNTED) return; // 防止多个组件注册，只需在首次进入的页面监听事件即可
+    PRELOAD_MOUNTED = true;
     eventCenter.on('Preload:add', ({data, cb, timeout}) => {
       let newImages: string[] = [];
       const task = {
@@ -95,4 +76,4 @@ const ImagePool: Taro.FC = () => {
   )
 };
 
-export default ImagePool;
+export default Preload;
