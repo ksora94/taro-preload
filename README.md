@@ -26,9 +26,9 @@ export default class Index extends Component{
 }
 ```
 
-在任何页面，任何地方，都可以调用预加载命令。
+确保Preload组件挂载成功后，在任何页面，任何地方，都可以调用预加载命令。
 ```tsx
-import preload from 'taro-preload';
+import {preload} from 'taro-preload';
 
 preload(['img1', 'img2']).then(() => {
   console.log('预加载结束')
